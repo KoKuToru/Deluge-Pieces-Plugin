@@ -47,25 +47,18 @@ def priority_loop(meth):
     for t in torrents:
         tor = component.get("TorrentManager").torrents[t]
         if tor.status.state == tor.status.downloading:
-            lf = __last_first.get(t)
-            if not(lf):
-                lf = 0
-            try:
-                cand = tor.status.pieces.index(False,lf)
-                if (tor.handle.piece_priority(cand) == 0):
-                    prios = tor.handle.piece_priorities()
-                    while (tor.handle.piece_priority(cand) == 0):
-                        cand += 1
-                        pcand = 0
-                        for (i,x) in enumerate(prios[cand:]):
-                            if x > 0:
-                                pcand = i + cand
-                                break
-                        cand = max(tor.status.pieces.index(False,cand), pcand)
-                lf = cand
-            except ValueError:
-                continue
-            # lf is now the first un-downloaded, desired piece of this torrent
-            if (tor.handle.piece_priority(lf) < __target_priority):
-                tor.handle.piece_priority(lf,__target_priority)
-            __last_first[t] = lf
+            #get pieces list
+            prios = tor.handle.piece_priorities()
+            #for each pieces
+            priority = 7
+            count    = 0
+            for i,x in enumerate(prios):
+                if (x > 0):
+                    prios[i] = priority
+                    count = count + 1
+                    if (count > 4):
+                        if (priority > 1):
+                            priority = priority - 1
+                            count = 0
+            #update pieces
+            tor.handle.prioritize_pieces(prios)
