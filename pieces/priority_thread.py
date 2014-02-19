@@ -54,11 +54,12 @@ def priority_loop(meth):
             count    = 0
             for i,x in enumerate(prios):
                 if (x > 0):
-                    prios[i] = priority
-                    count = count + 1
-                    if (count > 4):
-                        if (priority > 1):
-                            priority = priority - 1
-                            count = 0
+                    if (tor.handle.have_piece(i) == False):
+                        prios[i] = priority
+                        count = count + 1
+                        if (count > 4):
+                            if (priority > 1):
+                                priority = priority - 1
+                                count = 0
             #update pieces
             tor.handle.prioritize_pieces(prios)
