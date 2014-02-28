@@ -39,21 +39,18 @@
 from deluge.ui.client import client
 import deluge.component as component
 
-__target_priority = 5
-__last_first = {}
-
 def priority_loop(meth):
-    torrents = meth()
-    for t in torrents:
-        tor = component.get("TorrentManager").torrents[t]
-        if tor.status.state == tor.status.downloading:
-            #get pieces list
-            prios = tor.handle.piece_priorities()
-            #for each pieces
-            priority = 7
-            count    = 0
-            for i,x in enumerate(prios):
-                if (x > 0):
+    try:
+        torrents = meth()
+        for t in torrents:
+            tor = component.get("TorrentManager").torrents[t]
+            if tor.status.state == tor.status.downloading:
+                #get pieces list
+                prios = tor.handle.piece_priorities()
+                #for each pieces
+                priority = 7
+                count    = 0
+                for i,x in enumerate(prios):
                     if (tor.handle.have_piece(i) == False):
                         prios[i] = priority
                         count = count + 1
@@ -61,5 +58,8 @@ def priority_loop(meth):
                             if (priority > 1):
                                 priority = priority - 1
                                 count = 0
-            #update pieces
-            tor.handle.prioritize_pieces(prios)
+                #update pieces
+                tor.handle.prioritize_pieces(prios)
+    except:
+        #try again later ;)
+        print ""
